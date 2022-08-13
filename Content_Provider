@@ -1,0 +1,486 @@
+///MainActivity
+
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+
+public class MainActivity extends AppCompatActivity {
+
+    private SqliteDatabase mDatabase;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        RecyclerView contactView = findViewById(R.id.myContactList);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        contactView.setLayoutManager(linearLayoutManager);
+        contactView.setHasFixedSize(true);
+        mDatabase = new SqliteDatabase(this);
+        ArrayList<Contacts> allContacts = mDatabase.listContacts();
+        if (allContacts.size() > 0) {
+            contactView.setVisibility(View.VISIBLE);
+            ContactAdapter mAdapter = new ContactAdapter(this, allContacts);
+            contactView.setAdapter(mAdapter);
+        }
+        else {
+            contactView.setVisibility(View.GONE);
+            Toast.makeText(this, "There is no contact in the database. Start adding now", Toast.LENGTH_LONG).show();
+        }
+        Button btnAdd = findViewById(R.id.btnAdd);
+        btnAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addTaskDialog();
+            }
+        });
+
+    }
+    private void addTaskDialog() {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View subView = inflater.inflate(R.layout.add_contacts, null);
+        final EditText nameField = subView.findViewById(R.id.enterName);
+        final EditText noField = subView.findViewById(R.id.enterPhoneNum);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Add new CONTACT");
+        builder.setView(subView);
+        builder.create();
+        builder.setPositiveButton("ADD CONTACT", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                final String name = nameField.getText().toString();
+                final String ph_no = noField.getText().toString();
+                if (TextUtils.isEmpty(name)) {
+                    Toast.makeText(MainActivity.this, "Something went wrong. Check your input values", Toast.LENGTH_LONG).show();
+                }
+                else {
+                    Contacts newContact = new Contacts(name, ph_no);
+                    mDatabase.addContacts(newContact);
+                    finish();
+                    startActivity(getIntent());
+                }
+            }
+        });
+        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Toast.makeText(MainActivity.this, "Task cancelled", Toast.LENGTH_LONG).show();
+            }
+        });
+        builder.show();
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mDatabase != null) {
+            mDatabase.close();
+        }
+    }
+}
+
+
+///Activity main XML
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="8dp"
+    tools:context=".MainActivity">
+
+
+    <Button
+        android:id="@+id/btnAdd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ADD"
+        android:padding="2dp"
+        android:layout_marginBottom="4dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="600dp"
+        android:id="@+id/myContactList" />
+
+
+
+
+</FrameLayout>
+
+
+// add contatcs
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="15dp"
+    android:background="#63ED07"
+    >
+
+    <EditText
+        android:id="@+id/enterName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Name"
+        android:textSize="12dp"
+        android:inputType="text"
+        android:maxLines="1"
+        android:layout_marginEnd="8dp"
+        android:background="@color/white"
+        android:padding="12dp"/>
+    <EditText
+        android:background="@color/white"
+        android:id="@+id/enterPhoneNum"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Number"
+        android:layout_marginTop="10dp"
+        android:textSize="12sp"
+        android:inputType="phone"
+        android:maxLines="1"
+        android:layout_marginEnd="8dp"
+        android:padding="12dp"/>
+
+
+</LinearLayout>
+
+
+//contact list layout
+
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    app:cardElevation="5dp"
+    app:cardCornerRadius="20dp"
+    app:cardBackgroundColor="#EFD809"
+    app:cardMaxElevation="5dp"
+    app:cardUseCompatPadding="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp">
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/contactName"
+                android:layout_width="220dp"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_below="@+id/contactName"
+                android:id="@+id/phoneNum"
+                android:layout_width="220dp"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+        <ImageView
+            android:id="@+id/editContact"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_edit"
+            android:layout_weight="1"
+           />
+        <ImageView
+            android:id="@+id/deleteContact"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:src="@drawable/ic_remove"
+            />
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
+
+
+//contact Adapter
+
+
+
+public class ContactAdapter extends RecyclerView.Adapter<ContactViewHolder> implements Filterable {
+
+    private Context context;
+    private ArrayList<Contacts> listContacts;
+    private ArrayList<Contacts> mArrayList;
+    private SqliteDatabase mDatabase;
+    ContactAdapter(Context context, ArrayList<Contacts> listContacts) {
+        this.context = context;
+        this.listContacts = listContacts;
+        this.mArrayList = listContacts;
+        mDatabase = new SqliteDatabase(context);
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                String charString = charSequence.toString();
+                if (charString.isEmpty()) {
+                    listContacts = mArrayList;
+                }
+                else {
+                    ArrayList<Contacts> filteredList = new ArrayList<>();
+                    for (Contacts contacts : mArrayList) {
+                        if (contacts.getName().toLowerCase().contains(charString)) {
+                            filteredList.add(contacts);
+                        }
+                    }
+                    listContacts = filteredList;
+                }
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = listContacts;
+                return filterResults;
+            }
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                listContacts = (ArrayList<Contacts>) filterResults.values;
+                notifyDataSetChanged();
+            }
+        };
+    }
+
+
+            @NonNull
+    @Override
+    public ContactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.contact_list_layout, parent, false);
+        return new ContactViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ContactViewHolder holder, int position) {
+        final Contacts contacts = listContacts.get(position);
+        holder.tvName.setText(contacts.getName());
+        holder.tvPhoneNum.setText(contacts.getPhno());
+        holder.editContact.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                editTaskDialog(contacts);
+            }
+        });
+        holder.deleteContact.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mDatabase.deleteContact(contacts.getId());
+                ((Activity) context).finish();
+                context.startActivity(((Activity) context).getIntent());
+            }
+        });
+
+    }
+
+    @Override
+    public int getItemCount() {
+        return listContacts.size();
+    }
+    private void editTaskDialog(final Contacts contacts) {
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View subView = inflater.inflate(R.layout.add_contacts, null);
+        final EditText nameField = subView.findViewById(R.id.enterName);
+        final EditText contactField = subView.findViewById(R.id.enterPhoneNum);
+        if (contacts != null) {
+            nameField.setText(contacts.getName());
+            contactField.setText(String.valueOf(contacts.getPhno()));
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Edit contact");
+        builder.setView(subView);
+        builder.create();
+        builder.setPositiveButton("EDIT CONTACT", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                final String name = nameField.getText().toString();
+                final String ph_no = contactField.getText().toString();
+                if (TextUtils.isEmpty(name)) {
+                    Toast.makeText(context, "Something went wrong. Check your input values", Toast.LENGTH_LONG).show();
+                } else {
+                            mDatabase.updateContacts(new
+                            Contacts(Objects.requireNonNull(contacts).getId(), name, ph_no));
+                            ((Activity) context).finish();
+                            context.startActivity(((Activity)
+                            context).getIntent());
+                }
+            }
+        });
+        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Toast.makeText(context, "Task cancelled",Toast.LENGTH_LONG).show();
+            }
+        });
+        builder.show();
+    }
+}
+
+
+///contactclass
+
+package com.example.sqltest;
+
+public class Contacts {
+    private int id;
+    private String name;
+    private String phoneNumber;
+
+    Contacts(String name, String phno) {
+        this.name = name;
+        this.phoneNumber = phno;
+    }
+    Contacts(int id, String name, String phno) {
+        this.id = id;
+        this.name = name;
+        this.phoneNumber = phno;
+    }
+    int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    String getPhno() {
+        return phoneNumber;
+    }
+    public void setPhno(String phno) {
+        this.phoneNumber = phno;
+    }
+}
+
+
+//content view holder
+
+
+public class ContactViewHolder extends RecyclerView.ViewHolder{
+
+    TextView tvName, tvPhoneNum;
+    ImageView deleteContact;
+    ImageView editContact;
+
+    public ContactViewHolder(@NonNull View itemView) {
+        super(itemView);
+
+        tvName = itemView.findViewById(R.id.contactName);
+        tvPhoneNum = itemView.findViewById(R.id.phoneNum);
+        deleteContact = itemView.findViewById(R.id.deleteContact);
+        editContact = itemView.findViewById(R.id.editContact);
+
+    }
+}
+
+
+//SQLite database
+
+
+public class SqliteDatabase extends SQLiteOpenHelper {
+
+    private static final int DATABASE_VERSION = 5;
+    private static final String DATABASE_NAME = "Contacts";
+    private static final String TABLE_CONTACTS = "Contacts";
+    private static final String COLUMN_ID = "_id";
+    private static final String COLUMN_NAME = "contactName";
+    private static final String COLUMN_NO = "phoneNumber";
+    SqliteDatabase(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+
+
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        String CREATE_CONTACTS_TABLE = "CREATE TABLE "
+                + TABLE_CONTACTS + "(" + COLUMN_ID
+                + " INTEGER PRIMARY KEY,"
+                + COLUMN_NAME + " TEXT,"
+                + COLUMN_NO + " INTEGER" + ")";
+        db.execSQL(CREATE_CONTACTS_TABLE);
+
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CONTACTS);
+        onCreate(db);
+
+    }
+    ArrayList<Contacts> listContacts() {
+        String sql = "select * from " + TABLE_CONTACTS;
+        SQLiteDatabase db = this.getReadableDatabase();
+        ArrayList<Contacts> storeContacts = new ArrayList<>();
+        Cursor cursor = db.rawQuery(sql, null);
+        if (cursor.moveToFirst()) {
+            do {
+                int id = Integer.parseInt(cursor.getString(0));
+                String name = cursor.getString(1);
+                String phno = cursor.getString(2);
+                storeContacts.add(new Contacts(id, name, phno));
+            }
+            while (cursor.moveToNext());
+        }
+        cursor.close();
+        return storeContacts;
+    }
+    void addContacts(Contacts contacts) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME, contacts.getName());
+        values.put(COLUMN_NO, contacts.getPhno());
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert(TABLE_CONTACTS, null, values);
+    }
+    void updateContacts(Contacts contacts) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME, contacts.getName());
+        values.put(COLUMN_NO, contacts.getPhno());
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.update(TABLE_CONTACTS, values, COLUMN_ID + " = ?", new String[]{String.valueOf(contacts.getId())});
+    }
+    void deleteContact(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_CONTACTS, COLUMN_ID + " = ?", new String[]{String.valueOf(id)});
+
+    }
+}
+
+
+
+
+
+
+
+
