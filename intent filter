@@ -1,0 +1,63 @@
+
+///*****let's assume that you have an Activity that needs to launch an email client and sends an email using your Android device.
+For this purpose, your Activity would send an ACTION_SEND along with appropriate chooser,
+to the Android Intent Resolver. The specified chooser gives the proper interface fo
+ the user to pick how to send your email data. *\\\\
+
+
+Intent email = new Intent(Intent.ACTION_SEND, Uri.parse("mailto:"));
+email.putExtra(Intent.EXTRA_EMAIL, recipients);
+email.putExtra(Intent.EXTRA_SUBJECT, subject.getText().toString());
+email.putExtra(Intent.EXTRA_TEXT, body.getText().toString());
+startActivity(Intent.createChooser(email, "Choose an email client from..."));
+
+
+
+////*****  For example, assume that you have an Activity that needs to open URL in a web browser on your Android device. For this purpose,
+your Activity will send ACTION_WEB_SEARCH Intent to the Android Intent Resolver to open given URL in the web browser. The Intent Resolver 
+parses through a list of Activities and chooses the one that would best match your Intent, 
+in this case, the Web Browser Activity. The Intent Resolver then passes your web page to the web browser and starts the Web Browser Activity
+
+*****\\\\\
+
+
+
+String q = "tutorialspoint";
+Intent intent = new Intent(Intent.ACTION_WEB_SEARCH );
+intent.putExtra(SearchManager.QUERY, q);
+startActivity(intent);
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+Types of Intents
+
+There are following two types of intents supported by Android
+
+Explicit Intents
+
+Explicit intent going to be connected internal world of application,suppose if you wants to connect
+one activity to another activity, we can do this quote by explicit intent, below image is connecting 
+first activity to second activity by clicking button.
+
+
+
+Implicit Intents
+
+These intents do not name a target and the field for the component name is left blank. 
+Implicit intents are often used to activate components in other applications. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
