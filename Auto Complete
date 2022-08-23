@@ -1,0 +1,62 @@
+//XML
+
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <AutoCompleteTextView
+        android:id="@+id/autoCompleteTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="396dp"
+        android:ems="15"
+        android:singleLine="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.618"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <requestFocus />
+    </AutoCompleteTextView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+//Code
+
+package my.app.autocomplete;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.graphics.Color;
+import android.os.Bundle;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+
+        String[] fruits = {"Rahim", "sarker", "ABU", "NAYEEM", "Apple", "Jarna", "MIM", "Pear"};
+
+
+        //Creating the instance of ArrayAdapter containing list of fruit names
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>
+                (this, android.R.layout.select_dialog_item, fruits);
+        //Getting the instance of AutoCompleteTextView
+        AutoCompleteTextView t = findViewById(R.id.autoCompleteTextView);
+        t.setThreshold(1);//will start working from first character
+        t.setAdapter(adapter);//setting the adapter data into the AutoCompleteTextView
+        t.setTextColor(Color.GREEN);
+    }
+}
